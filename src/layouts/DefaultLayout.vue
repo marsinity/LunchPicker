@@ -25,6 +25,6 @@ import AppFooter from '@/components/layout/AppFooter.vue'
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-lg) var(--space-md) var(--space-2xl);
+  padding: var(--space-xl) var(--space-md) var(--space-2xl);
 }
 </style>

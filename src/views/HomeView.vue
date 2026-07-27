@@ -1,40 +1,111 @@
 <script setup>
-import { onMounted } from 'vue'
-import LunchPicker from '@/components/lunch/LunchPicker.vue'
+import { onMounted, ref } from 'vue'
+import HomeBrand from '@/components/home/HomeBrand.vue'
+import PickAction from '@/components/home/PickAction.vue'
+import QuickFilters from '@/components/home/QuickFilters.vue'
+import RecentRestaurants from '@/components/home/RecentRestaurants.vue'
+import PickResult from '@/components/lunch/PickResult.vue'
+import AppButton from '@/components/common/AppButton.vue'
 import { useLunchPick } from '@/composables/useLunchPick'
+import { useQuickFilters } from '@/composables/useQuickFilters'
+import { restaurantService } from '@/services/restaurantService'
 
-const { picked, isLoading, isPicking, error, loadRestaurants, pickRandom, resetPick } =
-  useLunchPick()
+const {
+  picked,
+  isLoading,
+  isPicking,
+  error,
+  loadRestaurants,
+  pickRandom,
+  resetPick,
+} = useLunchPick()
+
+const { filters, toggleFilter } = useQuickFilters()
+
+const recentRestaurants = ref([])
+const isRecentLoading = ref(false)
+
+async function loadRecent() {
+  isRecentLoading.value = true
+  try {
+    recentRestaurants.value = await restaurantService.getRecent(4)
+  } catch (err) {
+    console.error(err)
+  } finally {
+    isRecentLoading.value = false
+  }
+}
 
 onMounted(() => {
   loadRestaurants()
+  loadRecent()
 })
 </script>
 
 <template>
   <div class="home">
-    <p v-if="isLoading" class="home__status">식당 목록 불러오는 중...</p>
-    <p v-else-if="error" class="home__status home__status--error" role="alert">
+    <HomeBrand />
+
+    <p v-if="error" class="home__status home__status--error" role="alert">
       {{ error }}
     </p>
 
-    <LunchPicker
-      v-else
-      :picked="picked"
-      :is-picking="isPicking"
-      @pick="pickRandom"
-      @reset="resetPick"
-    />
+    <template v-else>
+      <PickResult v-if="picked" :restaurant="picked" class="home__result" />
+
+      <PickAction :is-picking="isPicking || isLoading" @pick="pickRandom" />
+
+      <div v-if="picked" class="home__reset">
+        <AppButton variant="ghost" size="sm" @click="resetPick">
+          결과 닫기
+        </AppButton>
+      </div>
+
+      <QuickFilters :model-value="filters" @toggle="toggleFilter" />
+
+      <RecentRestaurants
+        :restaurants="recentRestaurants"
+        :is-loading="isRecentLoading"
+      />
+    </template>
   </div>
 </template>
 
 <style scoped>
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
 .home__status {
   text-align: center;
   color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 .home__status--error {
-  color: #b42318;
+  color: #ff3b30;
+}
+
+.home__result {
+  animation: result-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home__reset {
+  display: flex;
+  justify-content: center;
+  margin-top: calc(var(--space-md) * -1);
+}
+
+@keyframes result-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 </style>

@@ -8,12 +8,11 @@
 .footer {
   padding: var(--space-lg) var(--space-md);
   text-align: center;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
 }
 
 .footer__text {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+  letter-spacing: -0.01em;
 }
 </style>

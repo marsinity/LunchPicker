@@ -28,7 +28,6 @@ defineProps({
   font-weight: 600;
   color: var(--color-brand);
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: -0.01em;
 }
 </style>

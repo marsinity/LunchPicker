@@ -12,4 +12,10 @@ export const restaurantService = {
   async getById(id) {
     return mockRestaurants.find((restaurant) => restaurant.id === id) ?? null
   },
+
+  async getRecent(limit = 4) {
+    return [...mockRestaurants]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, limit)
+  },
 }

@@ -39,13 +39,15 @@ defineProps({
   justify-content: center;
   gap: var(--space-sm);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   font-weight: 600;
+  letter-spacing: -0.015em;
   transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    transform 0.1s ease,
-    box-shadow 0.15s ease;
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.12s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
 }
 
 .btn:active:not(:disabled) {
@@ -53,7 +55,7 @@ defineProps({
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -91,12 +93,11 @@ defineProps({
 
 .btn--secondary {
   color: var(--color-text);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted);
 }
 
 .btn--secondary:hover:not(:disabled) {
-  background: var(--color-surface-muted);
+  background: #e8e8ed;
 }
 
 .btn--ghost {

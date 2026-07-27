@@ -7,7 +7,7 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('@/views/HomeView.vue'),
-      meta: { title: '점심 추천' },
+      meta: { title: '오늘 뭐 먹지?' },
     },
     {
       path: '/restaurants',

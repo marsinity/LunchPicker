@@ -18,8 +18,11 @@ body {
   font-size: var(--font-size-base);
   line-height: 1.5;
   color: var(--color-text);
-  background-color: var(--color-bg);
+  background:
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgb(255 138 0 / 0.08), transparent 55%),
+    var(--color-bg);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
