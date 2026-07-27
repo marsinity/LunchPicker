@@ -1,0 +1,47 @@
+:root {
+  /* Brand */
+  --color-brand: #e85d2a;
+  --color-brand-dark: #c94a1c;
+  --color-brand-soft: #fff3ed;
+
+  /* Surface */
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f3f0eb;
+
+  /* Text */
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b6560;
+  --color-text-inverse: #ffffff;
+
+  /* Border */
+  --color-border: #e8e2da;
+
+  /* Typography */
+  --font-sans: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Layout */
+  --max-width: 40rem;
+  --header-height: 3.5rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 3px rgb(26 26 26 / 0.06);
+  --shadow-md: 0 4px 16px rgb(26 26 26 / 0.08);
+}
