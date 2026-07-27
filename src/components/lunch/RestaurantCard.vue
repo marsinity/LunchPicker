@@ -4,48 +4,55 @@ defineProps({
     type: Object,
     required: true,
   },
+  compact: {
+    type: Boolean,
+    default: false,
+  },
 })
 </script>
 
 <template>
   <article class="card">
-    <div class="card__top">
-      <div class="card__identity">
-        <span class="card__badge" aria-hidden="true">{{ restaurant.category?.charAt(0) }}</span>
+    <div class="card__media" aria-hidden="true">
+      <span class="card__emoji">{{ restaurant.emoji ?? '🍽️' }}</span>
+    </div>
+
+    <div class="card__body">
+      <div class="card__top">
         <div class="card__meta">
           <h3 class="card__name">{{ restaurant.name }}</h3>
           <p class="card__category">{{ restaurant.category }}</p>
         </div>
+        <span class="card__distance">{{ restaurant.distance }}</span>
       </div>
-      <span class="card__distance">{{ restaurant.distance }}</span>
+
+      <dl class="card__facts">
+        <div v-if="restaurant.price" class="card__fact">
+          <dt>가격</dt>
+          <dd>{{ restaurant.price }}</dd>
+        </div>
+        <div v-if="!compact && restaurant.menu" class="card__fact">
+          <dt>메뉴</dt>
+          <dd>{{ restaurant.menu }}</dd>
+        </div>
+        <div v-if="!compact && restaurant.partySize" class="card__fact">
+          <dt>인원</dt>
+          <dd>{{ restaurant.partySize }}</dd>
+        </div>
+      </dl>
+
+      <ul v-if="!compact && restaurant.tags?.length" class="card__tags">
+        <li v-for="tag in restaurant.tags" :key="tag" class="card__tag">
+          {{ tag }}
+        </li>
+      </ul>
     </div>
-
-    <dl class="card__facts">
-      <div v-if="restaurant.price" class="card__fact">
-        <dt>가격</dt>
-        <dd>{{ restaurant.price }}</dd>
-      </div>
-      <div v-if="restaurant.menu" class="card__fact">
-        <dt>메뉴</dt>
-        <dd>{{ restaurant.menu }}</dd>
-      </div>
-      <div v-if="restaurant.partySize" class="card__fact">
-        <dt>인원</dt>
-        <dd>{{ restaurant.partySize }}</dd>
-      </div>
-    </dl>
-
-    <ul v-if="restaurant.tags?.length" class="card__tags">
-      <li v-for="tag in restaurant.tags" :key="tag" class="card__tag">
-        {{ tag }}
-      </li>
-    </ul>
   </article>
 </template>
 
 <style scoped>
 .card {
-  padding: var(--space-md) var(--space-lg);
+  overflow: hidden;
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -57,31 +64,29 @@ defineProps({
   transform: scale(0.99);
 }
 
+.card__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 5.5rem;
+  background: linear-gradient(180deg, var(--color-brand-soft) 0%, var(--color-surface-muted) 100%);
+}
+
+.card__emoji {
+  font-size: 2.75rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.card__body {
+  padding: var(--space-md) var(--space-lg);
+}
+
 .card__top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-md);
-}
-
-.card__identity {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.card__badge {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--color-brand);
-  background: var(--color-brand-soft);
-  border-radius: var(--radius-md);
 }
 
 .card__meta {

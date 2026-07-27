@@ -15,12 +15,13 @@ const {
   isLoading,
   isPicking,
   error,
+  pickMessage,
   loadRestaurants,
   pickRandom,
   resetPick,
 } = useLunchPick()
 
-const { filters, toggleFilter } = useQuickFilters()
+const { filters, toggleFilter, resetFilters } = useQuickFilters()
 
 const recentRestaurants = ref([])
 const isRecentLoading = ref(false)
@@ -34,6 +35,20 @@ async function loadRecent() {
   } finally {
     isRecentLoading.value = false
   }
+}
+
+function handlePick() {
+  pickRandom(filters.value)
+}
+
+function handleToggleFilter(key, value) {
+  toggleFilter(key, value)
+  resetPick()
+}
+
+function handleResetFilters() {
+  resetFilters()
+  resetPick()
 }
 
 onMounted(() => {
@@ -53,7 +68,11 @@ onMounted(() => {
     <template v-else>
       <PickResult v-if="picked" :restaurant="picked" class="home__result" />
 
-      <PickAction :is-picking="isPicking || isLoading" @pick="pickRandom" />
+      <p v-else-if="pickMessage" class="home__status home__status--notice" role="status">
+        {{ pickMessage }}
+      </p>
+
+      <PickAction :is-picking="isPicking || isLoading" @pick="handlePick" />
 
       <div v-if="picked" class="home__reset">
         <AppButton variant="ghost" size="sm" @click="resetPick">
@@ -61,7 +80,11 @@ onMounted(() => {
         </AppButton>
       </div>
 
-      <QuickFilters :model-value="filters" @toggle="toggleFilter" />
+      <QuickFilters
+        :model-value="filters"
+        @toggle="handleToggleFilter"
+        @reset="handleResetFilters"
+      />
 
       <RecentRestaurants
         :restaurants="recentRestaurants"
@@ -86,6 +109,13 @@ onMounted(() => {
 
 .home__status--error {
   color: #ff3b30;
+}
+
+.home__status--notice {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .home__result {

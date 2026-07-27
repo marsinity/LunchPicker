@@ -6,6 +6,7 @@ export const mockRestaurants = [
   {
     id: '1',
     name: '김밥천국',
+    emoji: '🥟',
     category: '분식',
     distance: '도보 3분',
     price: '1만원 이하',
@@ -17,6 +18,7 @@ export const mockRestaurants = [
   {
     id: '2',
     name: '한솥도시락',
+    emoji: '🍛',
     category: '도시락',
     distance: '도보 5분',
     price: '1만원 이하',
@@ -28,6 +30,7 @@ export const mockRestaurants = [
   {
     id: '3',
     name: '멘야산다이',
+    emoji: '🍜',
     category: '일식',
     distance: '도보 7분',
     price: '1~1.5만원',
@@ -39,6 +42,7 @@ export const mockRestaurants = [
   {
     id: '4',
     name: '샐러디',
+    emoji: '🥗',
     category: '샐러드',
     distance: '도보 4분',
     price: '1~1.5만원',
@@ -50,6 +54,7 @@ export const mockRestaurants = [
   {
     id: '5',
     name: '역전우동',
+    emoji: '🍜',
     category: '일식',
     distance: '도보 6분',
     price: '1만원 이하',
@@ -61,6 +66,7 @@ export const mockRestaurants = [
   {
     id: '6',
     name: '본죽',
+    emoji: '🥘',
     category: '죽/백반',
     distance: '도보 8분',
     price: '1만원 이하',

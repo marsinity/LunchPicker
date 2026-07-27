@@ -1,14 +1,16 @@
 <script setup>
+import { computed } from 'vue'
+import AppButton from '@/components/common/AppButton.vue'
 import { FILTER_OPTIONS } from '@/composables/useQuickFilters'
 
-defineProps({
+const props = defineProps({
   modelValue: {
     type: Object,
     required: true,
   },
 })
 
-const emit = defineEmits(['toggle'])
+const emit = defineEmits(['toggle', 'reset'])
 
 const groups = [
   { key: 'distance', label: '거리' },
@@ -16,6 +18,10 @@ const groups = [
   { key: 'menu', label: '메뉴' },
   { key: 'party', label: '인원' },
 ]
+
+const hasActiveFilters = computed(() =>
+  Object.values(props.modelValue).some((value) => value != null),
+)
 
 function onSelect(key, value) {
   emit('toggle', key, value)
@@ -25,8 +31,19 @@ function onSelect(key, value) {
 <template>
   <section class="filters" aria-labelledby="filters-title">
     <div class="filters__header">
-      <h2 id="filters-title" class="filters__title">빠른 조건 선택</h2>
-      <p class="filters__desc">원하는 조건을 골라 점심을 좁혀 보세요</p>
+      <div class="filters__heading">
+        <h2 id="filters-title" class="filters__title">빠른 조건 선택</h2>
+        <p class="filters__desc">원하는 조건을 골라 점심을 좁혀 보세요</p>
+      </div>
+      <AppButton
+        v-if="hasActiveFilters"
+        variant="ghost"
+        size="sm"
+        class="filters__reset"
+        @click="emit('reset')"
+      >
+        조건 초기화
+      </AppButton>
     </div>
 
     <div class="filters__groups">
@@ -68,8 +85,21 @@ function onSelect(key, value) {
 
 .filters__header {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.filters__heading {
+  display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  min-width: 0;
+}
+
+.filters__reset {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
 }
 
 .filters__title {

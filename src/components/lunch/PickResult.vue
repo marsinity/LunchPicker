@@ -12,7 +12,7 @@ defineProps({
 <template>
   <div class="result" role="status" aria-live="polite">
     <p class="result__label">오늘의 추천</p>
-    <RestaurantCard :restaurant="restaurant" />
+    <RestaurantCard :restaurant="restaurant" compact />
   </div>
 </template>
 
