@@ -26,7 +26,11 @@ const emit = defineEmits(['pick', 'reset'])
     <PickResult
       v-if="picked"
       :restaurant="picked"
+      :is-picking="isPicking"
       class="picker__result"
+      @again="emit('pick')"
+      @decide="emit('reset')"
+      @close="emit('reset')"
     />
 
     <div v-else class="picker__placeholder" :class="{ 'picker__placeholder--active': isPicking }">
@@ -34,9 +38,8 @@ const emit = defineEmits(['pick', 'reset'])
       <p>{{ isPicking ? '추천 중...' : '아직 추천 전이에요' }}</p>
     </div>
 
-    <div class="picker__actions">
+    <div v-if="!picked" class="picker__actions">
       <AppButton
-        v-if="!picked"
         variant="primary"
         size="lg"
         block
@@ -45,15 +48,6 @@ const emit = defineEmits(['pick', 'reset'])
       >
         {{ isPicking ? '추천 중...' : '점심 추천받기' }}
       </AppButton>
-
-      <template v-else>
-        <AppButton variant="primary" size="lg" block @click="emit('pick')">
-          다시 추천받기
-        </AppButton>
-        <AppButton variant="ghost" size="md" block @click="emit('reset')">
-          초기화
-        </AppButton>
-      </template>
     </div>
   </section>
 </template>

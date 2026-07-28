@@ -1,4 +1,8 @@
 <script setup>
+/**
+ * 홈 Hero Card (시안: 좌 텍스트 · 우 이모지 · 하단 뽑기 버튼)
+ * 뽑기 동작은 부모(HomeView)의 @pick 으로 연결됩니다.
+ */
 defineProps({
   title: {
     type: String,
@@ -6,104 +10,170 @@ defineProps({
   },
   subtitle: {
     type: String,
-    default: '고민은 줄이고, 점심은 맛있게',
+    default: '오늘 점심 고민은\nLunchPicker에게 맡겨보세요.',
+  },
+  isPicking: {
+    type: Boolean,
+    default: false,
   },
 })
+
+defineEmits(['pick'])
 </script>
 
 <template>
-  <header class="brand">
-    <div class="brand__logo" aria-hidden="true">
-      <svg class="brand__mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="40" height="40" rx="12" fill="currentColor" />
-        <path
-          d="M13 14.5c0-.828.672-1.5 1.5-1.5h2c.828 0 1.5.672 1.5 1.5V28a1.5 1.5 0 0 1-3 0v-8.5H14.5A1.5 1.5 0 0 1 13 18v-3.5Z"
-          fill="#fff"
-        />
-        <path
-          d="M22 13a1.5 1.5 0 0 1 1.5-1.5H26a1.5 1.5 0 0 1 1.5 1.5v6.25c1.243 0 2.25 1.007 2.25 2.25V28a1.5 1.5 0 0 1-3 0v-5.5h-1.5V28a1.5 1.5 0 0 1-3 0V13Z"
-          fill="#fff"
-        />
-      </svg>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__top">
+      <div class="hero__text">
+        <h1 id="hero-title" class="hero__title">{{ title }}</h1>
+        <p class="hero__desc">{{ subtitle }}</p>
+      </div>
+
+      <span class="hero__emoji" aria-hidden="true">🍜</span>
     </div>
-    <div class="brand__text">
-      <p class="brand__name">LunchPicker</p>
-      <h1 class="brand__title">{{ title }}</h1>
-      <p class="brand__subtitle">{{ subtitle }}</p>
-    </div>
-  </header>
+
+    <button
+      type="button"
+      class="hero__btn"
+      :disabled="isPicking"
+      @click="$emit('pick')"
+    >
+      {{ isPicking ? '뽑는 중...' : '오늘 점심 뽑기 🎲' }}
+    </button>
+  </section>
 </template>
 
 <style scoped>
-.brand {
+.hero {
   display: flex;
   flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  padding: 1.5rem 1.5rem 1.375rem;
+  color: var(--color-text-inverse);
+  background: linear-gradient(135deg, #ff9a1f, #ff7a00);
+  border-radius: 24px;
+  box-shadow:
+    0 4px 6px rgb(255 122 0 / 0.12),
+    0 12px 28px rgb(255 122 0 / 0.28);
+  animation: hero-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero__top {
+  display: flex;
   align-items: center;
-  gap: var(--space-lg);
-  text-align: center;
-  padding: var(--space-sm) 0 var(--space-md);
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
-.brand__logo {
-  color: var(--color-brand);
-  animation: brand-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.brand__mark {
-  width: 3.5rem;
-  height: 3.5rem;
-  display: block;
-  filter: drop-shadow(0 6px 16px rgb(255 138 0 / 0.28));
-}
-
-.brand__text {
+.hero__text {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
-  animation: brand-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  gap: 0.5rem;
+  text-align: left;
 }
 
-.brand__name {
+.hero__title {
+  font-size: clamp(1.625rem, 6vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+
+.hero__desc {
+  max-width: 12.5rem;
   font-size: var(--font-size-sm);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--color-brand);
-}
-
-.brand__title {
-  font-size: var(--font-size-3xl);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1.15;
-  color: var(--color-text);
-}
-
-.brand__subtitle {
-  margin-top: var(--space-xs);
-  font-size: var(--font-size-base);
-  color: var(--color-text-muted);
+  line-height: 1.45;
   letter-spacing: -0.01em;
+  color: rgb(255 255 255 / 0.92);
+  white-space: pre-line;
 }
 
-@keyframes brand-in {
+.hero__emoji {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  font-size: 4rem;
+  line-height: 1;
+  filter: drop-shadow(0 8px 16px rgb(0 0 0 / 0.15));
+  animation: emoji-float 3s ease-in-out infinite;
+}
+
+.hero__btn {
+  width: 100%;
+  min-height: 3.125rem;
+  padding: 0 1.5rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-brand);
+  background: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.12s ease,
+    box-shadow 0.18s ease;
+}
+
+.hero__btn:hover:not(:disabled) {
+  color: var(--color-brand-dark);
+  background: #fff8f0;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+  transform: translateY(-1px);
+}
+
+.hero__btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.hero__btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@keyframes hero-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
-@media (min-width: 48rem) {
-  .brand__title {
-    font-size: 2.5rem;
+@keyframes emoji-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@media (min-width: 28rem) {
+  .hero {
+    padding: 1.75rem 1.75rem 1.5rem;
+    gap: 1.375rem;
   }
 
-  .brand__mark {
-    width: 4rem;
-    height: 4rem;
+  .hero__desc {
+    max-width: 14rem;
+    font-size: var(--font-size-base);
+  }
+
+  .hero__emoji {
+    width: 6.5rem;
+    height: 6.5rem;
+    font-size: 4.75rem;
   }
 }
 </style>

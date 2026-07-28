@@ -22,8 +22,8 @@
 
   /* Typography */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
-    'Apple SD Gothic Neo', 'Pretendard', 'Malgun Gothic', sans-serif;
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Malgun Gothic', 'Segoe UI', sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.8125rem;
   --font-size-base: 1rem;
@@ -43,6 +43,7 @@
   /* Layout */
   --max-width: 40rem;
   --header-height: 3.25rem;
+  --nav-height: 4.25rem;
   --radius-sm: 0.625rem;
   --radius-md: 0.875rem;
   --radius-lg: 1.25rem;

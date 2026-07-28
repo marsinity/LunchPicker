@@ -1,17 +1,16 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import HomeBrand from '@/components/home/HomeBrand.vue'
-import PickAction from '@/components/home/PickAction.vue'
 import QuickFilters from '@/components/home/QuickFilters.vue'
 import RecentRestaurants from '@/components/home/RecentRestaurants.vue'
-import PickResult from '@/components/lunch/PickResult.vue'
-import AppButton from '@/components/common/AppButton.vue'
 import { useLunchPick } from '@/composables/useLunchPick'
 import { useQuickFilters } from '@/composables/useQuickFilters'
 import { restaurantService } from '@/services/restaurantService'
 
+const router = useRouter()
+
 const {
-  picked,
   isLoading,
   isPicking,
   error,
@@ -21,7 +20,7 @@ const {
   resetPick,
 } = useLunchPick()
 
-const { filters, toggleFilter, resetFilters } = useQuickFilters()
+const { filters } = useQuickFilters()
 
 const recentRestaurants = ref([])
 const isRecentLoading = ref(false)
@@ -37,17 +36,14 @@ async function loadRecent() {
   }
 }
 
-function handlePick() {
-  pickRandom(filters.value)
-}
-
-function handleToggleFilter(key, value) {
-  toggleFilter(key, value)
-  resetPick()
+async function handlePick() {
+  const result = await pickRandom(filters.value)
+  if (result) {
+    router.push({ name: 'result' })
+  }
 }
 
 function handleResetFilters() {
-  resetFilters()
   resetPick()
 }
 
@@ -59,32 +55,18 @@ onMounted(() => {
 
 <template>
   <div class="home">
-    <HomeBrand />
+    <HomeBrand :is-picking="isPicking || isLoading" @pick="handlePick" />
 
     <p v-if="error" class="home__status home__status--error" role="alert">
       {{ error }}
     </p>
 
     <template v-else>
-      <PickResult v-if="picked" :restaurant="picked" class="home__result" />
-
-      <p v-else-if="pickMessage" class="home__status home__status--notice" role="status">
+      <p v-if="pickMessage" class="home__status home__status--notice" role="status">
         {{ pickMessage }}
       </p>
 
-      <PickAction :is-picking="isPicking || isLoading" @pick="handlePick" />
-
-      <div v-if="picked" class="home__reset">
-        <AppButton variant="ghost" size="sm" @click="resetPick">
-          결과 닫기
-        </AppButton>
-      </div>
-
-      <QuickFilters
-        :model-value="filters"
-        @toggle="handleToggleFilter"
-        @reset="handleResetFilters"
-      />
+      <QuickFilters @reset="handleResetFilters" />
 
       <RecentRestaurants
         :restaurants="recentRestaurants"
@@ -116,26 +98,5 @@ onMounted(() => {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-}
-
-.home__result {
-  animation: result-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.home__reset {
-  display: flex;
-  justify-content: center;
-  margin-top: calc(var(--space-md) * -1);
-}
-
-@keyframes result-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 </style>

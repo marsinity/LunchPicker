@@ -18,6 +18,11 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  type: {
+    type: String,
+    default: 'button',
+    validator: (value) => ['button', 'submit', 'reset'].includes(value),
+  },
 })
 </script>
 
@@ -26,7 +31,7 @@ defineProps({
     class="btn"
     :class="[`btn--${variant}`, `btn--${size}`, { 'btn--block': block }]"
     :disabled="disabled"
-    type="button"
+    :type="type"
   >
     <slot />
   </button>

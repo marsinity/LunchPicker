@@ -1,72 +1,63 @@
 <script setup>
-import { computed } from 'vue'
-import AppButton from '@/components/common/AppButton.vue'
-import { FILTER_OPTIONS } from '@/composables/useQuickFilters'
+/**
+ * 홈의 "빠른 조건 선택" 요약 카드
+ * - 카드를 누르면 조건 설정 화면(/filters)으로 이동합니다.
+ * - 실제 옵션 선택은 FiltersView에서 합니다.
+ */
+import { useRouter } from 'vue-router'
+import {
+  FILTER_GROUPS,
+  getFilterLabel,
+  useQuickFilters,
+} from '@/composables/useQuickFilters'
 
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-})
+const emit = defineEmits(['reset'])
 
-const emit = defineEmits(['toggle', 'reset'])
+const router = useRouter()
+const { filters, isActive, resetFilters } = useQuickFilters()
 
-const groups = [
-  { key: 'distance', label: '거리' },
-  { key: 'price', label: '가격' },
-  { key: 'menu', label: '메뉴' },
-  { key: 'party', label: '인원' },
-]
+function openFilters(key) {
+  router.push({
+    name: 'filters',
+    query: { focus: key },
+  })
+}
 
-const hasActiveFilters = computed(() =>
-  Object.values(props.modelValue).some((value) => value != null),
-)
-
-function onSelect(key, value) {
-  emit('toggle', key, value)
+function handleReset() {
+  resetFilters()
+  emit('reset')
 }
 </script>
 
 <template>
   <section class="filters" aria-labelledby="filters-title">
     <div class="filters__header">
-      <div class="filters__heading">
-        <h2 id="filters-title" class="filters__title">빠른 조건 선택</h2>
-        <p class="filters__desc">원하는 조건을 골라 점심을 좁혀 보세요</p>
-      </div>
-      <AppButton
-        v-if="hasActiveFilters"
-        variant="ghost"
-        size="sm"
+      <h2 id="filters-title" class="filters__title">빠른 조건 선택</h2>
+      <button
+        type="button"
         class="filters__reset"
-        @click="emit('reset')"
+        :disabled="!isActive"
+        @click="handleReset"
       >
-        조건 초기화
-      </AppButton>
+        초기화
+      </button>
     </div>
 
-    <div class="filters__groups">
-      <div v-for="group in groups" :key="group.key" class="filters__group">
-        <p class="filters__label" :id="`filter-${group.key}`">{{ group.label }}</p>
-        <div
-          class="filters__chips"
-          role="group"
-          :aria-labelledby="`filter-${group.key}`"
-        >
-          <button
-            v-for="option in FILTER_OPTIONS[group.key]"
-            :key="option.value"
-            type="button"
-            class="filters__chip"
-            :class="{ 'filters__chip--active': modelValue[group.key] === option.value }"
-            :aria-pressed="modelValue[group.key] === option.value"
-            @click="onSelect(group.key, option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-      </div>
+    <div class="filters__grid">
+      <button
+        v-for="group in FILTER_GROUPS"
+        :key="group.key"
+        type="button"
+        class="filters__card"
+        :class="{ 'filters__card--active': filters[group.key] != null }"
+        @click="openFilters(group.key)"
+      >
+        <span class="filters__name">{{ group.label }}</span>
+        <span class="filters__emoji" aria-hidden="true">{{ group.emoji }}</span>
+        <span class="filters__value">
+          {{ getFilterLabel(group.key, filters[group.key]) }}
+        </span>
+      </button>
     </div>
   </section>
 </template>
@@ -75,31 +66,16 @@ function onSelect(key, value) {
 .filters {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
-  padding: var(--space-lg);
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  gap: var(--space-md);
   animation: filters-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
 }
 
 .filters__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-}
-
-.filters__heading {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  min-width: 0;
-}
-
-.filters__reset {
-  flex-shrink: 0;
-  margin-top: 0.125rem;
+  padding: 0 var(--space-xs);
 }
 
 .filters__title {
@@ -108,61 +84,91 @@ function onSelect(key, value) {
   letter-spacing: -0.025em;
 }
 
-.filters__desc {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-}
-
-.filters__groups {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.filters__group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.filters__label {
+.filters__reset {
+  padding: 0.25rem 0.125rem;
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--color-text-secondary);
   letter-spacing: -0.01em;
+  color: var(--color-brand);
+  background: transparent;
+  border: none;
+  transition: opacity 0.15s ease, color 0.15s ease;
 }
 
-.filters__chips {
+.filters__reset:hover:not(:disabled) {
+  color: var(--color-brand-dark);
+}
+
+.filters__reset:disabled {
+  color: var(--color-text-muted);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.filters__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.filters__card {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.filters__chip {
-  min-height: 2rem;
-  padding: 0 0.875rem;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--color-text);
-  background: var(--color-surface-muted);
-  border: 1px solid transparent;
-  border-radius: var(--radius-full);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 108px;
+  padding: 0.75rem 0.35rem;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #efe8e3;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.03);
   transition:
     background-color 0.18s ease,
-    color 0.18s ease,
     border-color 0.18s ease,
+    box-shadow 0.18s ease,
     transform 0.12s ease;
 }
 
-.filters__chip:active {
-  transform: scale(0.97);
+.filters__card:active {
+  transform: scale(0.985);
 }
 
-.filters__chip--active {
-  color: var(--color-brand);
+.filters__card--active {
   background: var(--color-brand-soft);
-  border-color: rgb(255 138 0 / 0.22);
+  border-color: rgb(255 138 0 / 0.45);
+  box-shadow: 0 1px 4px rgb(255 138 0 / 0.08);
+}
+
+.filters__name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-secondary);
+}
+
+.filters__card--active .filters__name {
+  color: var(--color-brand);
+}
+
+.filters__emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.filters__value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+.filters__card--active .filters__value {
+  color: var(--color-brand);
 }
 
 @keyframes filters-in {
