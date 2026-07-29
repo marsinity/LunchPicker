@@ -3,15 +3,13 @@
  * 홈 Hero Card (시안: 좌 텍스트 · 우 이모지 · 하단 뽑기 버튼)
  * 뽑기 동작은 부모(HomeView)의 @pick 으로 연결됩니다.
  */
+import {
+  getHomeHeroSubtitle,
+  getHomeHeroTitle,
+  getLocationNearLabel,
+} from '@/data/officeLocation'
+
 defineProps({
-  title: {
-    type: String,
-    default: '오늘 뭐 먹지?',
-  },
-  subtitle: {
-    type: String,
-    default: '오늘 점심 고민은\nLunchPicker에게 맡겨보세요.',
-  },
   isPicking: {
     type: Boolean,
     default: false,
@@ -19,12 +17,20 @@ defineProps({
 })
 
 defineEmits(['pick'])
+
+const locationLabel = getLocationNearLabel()
+const title = getHomeHeroTitle()
+const subtitle = getHomeHeroSubtitle()
 </script>
 
 <template>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero__top">
       <div class="hero__text">
+        <p class="hero__location">
+          <span class="hero__location-icon" aria-hidden="true">📍</span>
+          {{ locationLabel }}
+        </p>
         <h1 id="hero-title" class="hero__title">{{ title }}</h1>
         <p class="hero__desc">{{ subtitle }}</p>
       </div>
@@ -71,8 +77,27 @@ defineEmits(['pick'])
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
   text-align: left;
+}
+
+.hero__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: fit-content;
+  padding: 0.2rem 0.55rem 0.2rem 0.4rem;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgb(255 255 255 / 0.95);
+  background: rgb(255 255 255 / 0.16);
+  border-radius: var(--radius-full);
+}
+
+.hero__location-icon {
+  font-size: 0.75rem;
+  line-height: 1;
 }
 
 .hero__title {

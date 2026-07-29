@@ -11,6 +11,7 @@ import { parseWalkMinutes } from '@/composables/useQuickFilters'
 import { useLunchPick } from '@/composables/useLunchPick'
 import { useWishlist } from '@/composables/useWishlist'
 import { LIST_CATEGORY_OPTIONS, matchesListCategory, SORT_OPTIONS } from '@/data/restaurantOptions'
+import { getRestaurantsListDesc } from '@/data/officeLocation'
 
 const CATEGORIES = LIST_CATEGORY_OPTIONS
 
@@ -65,6 +66,8 @@ const filteredRestaurants = computed(() => {
 
 const totalCount = computed(() => filteredRestaurants.value.length)
 
+const listDesc = computed(() => getRestaurantsListDesc(totalCount.value))
+
 function selectSort(value) {
   sortBy.value = value
   sortOpen.value = false
@@ -79,6 +82,7 @@ onMounted(() => {
   <section class="restaurants" aria-labelledby="restaurants-title">
     <header class="restaurants__header">
       <h1 id="restaurants-title" class="restaurants__title">맛집 목록</h1>
+      <p class="restaurants__desc">{{ listDesc }}</p>
     </header>
 
     <div class="restaurants__toolbar">
@@ -184,6 +188,12 @@ onMounted(() => {
   font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: -0.03em;
+}
+
+.restaurants__desc {
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 .restaurants__toolbar {

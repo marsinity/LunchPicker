@@ -1,5 +1,6 @@
 <script setup>
 import RestaurantCard from '@/components/lunch/RestaurantCard.vue'
+import { getRecentRestaurantsDesc } from '@/data/officeLocation'
 
 defineProps({
   restaurants: {
@@ -11,13 +12,15 @@ defineProps({
     default: false,
   },
 })
+
+const recentDesc = getRecentRestaurantsDesc()
 </script>
 
 <template>
   <section class="recent" aria-labelledby="recent-title">
     <div class="recent__header">
       <h2 id="recent-title" class="recent__title">최근 등록된 식당</h2>
-      <p class="recent__desc">새로 추가된 근처 맛집이에요</p>
+      <p class="recent__desc">{{ recentDesc }}</p>
     </div>
 
     <p v-if="isLoading" class="recent__status">불러오는 중...</p>
