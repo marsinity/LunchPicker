@@ -12,4 +12,5 @@ export const TAG_OPTIONS = [
   '가벼움',
   '따뜻함',
   '담백함',
+  '집밥',
 ]

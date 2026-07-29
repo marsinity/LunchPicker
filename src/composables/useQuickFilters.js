@@ -21,6 +21,7 @@ export const FILTER_OPTIONS = {
     { value: 'japanese', label: '일식' },
     { value: 'chinese', label: '중식' },
     { value: 'western', label: '양식' },
+    { value: 'asian', label: '아시아' },
     { value: 'other', label: '기타' },
   ],
   party: [
@@ -40,13 +41,14 @@ export const FILTER_GROUPS = [
   { key: 'party', label: '인원', emoji: '👥' },
 ]
 
-const MENU_TYPES = new Set(['한식', '일식', '중식', '양식'])
+const MENU_TYPES = new Set(['한식', '일식', '중식', '양식', '아시아'])
 
 const MENU_FILTER_MAP = {
   korean: '한식',
   japanese: '일식',
   chinese: '중식',
   western: '양식',
+  asian: '아시아',
 }
 
 /** 홈·조건설정 화면이 같은 값을 보도록 모듈에 한 번만 만듭니다. */

@@ -207,9 +207,7 @@ onMounted(loadDetail)
           <span aria-hidden="true">📋</span>
           대표 메뉴
         </h2>
-        <ul class="detail__menu-list">
-          <li v-for="item in menuItems" :key="item">{{ item }}</li>
-        </ul>
+        <p class="detail__menu-text">{{ menuItems.join(', ') }}</p>
       </section>
 
       <div class="detail__actions">
@@ -438,27 +436,14 @@ onMounted(loadDetail)
 }
 
 .detail__location-value,
-.detail__menu-list li {
+.detail__menu-text {
+  margin-top: 0.3rem;
   font-size: 0.9375rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #1d1d1f;
   line-height: 1.35;
   word-break: keep-all;
-}
-
-.detail__location-value {
-  margin-top: 0.3rem;
-}
-
-.detail__menu-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.detail__menu-list li + li {
-  margin-top: 0.25rem;
 }
 
 .detail__map-btn {
