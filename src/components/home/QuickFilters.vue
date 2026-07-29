@@ -11,6 +11,13 @@ import {
   useQuickFilters,
 } from '@/composables/useQuickFilters'
 
+defineProps({
+  candidateCount: {
+    type: Number,
+    default: 0,
+  },
+})
+
 const emit = defineEmits(['reset'])
 
 const router = useRouter()
@@ -59,6 +66,10 @@ function handleReset() {
         </span>
       </button>
     </div>
+
+    <p class="filters__count" role="status">
+      현재 조건에 맞는 식당 <strong>{{ candidateCount }}곳</strong>
+    </p>
   </section>
 </template>
 
@@ -169,6 +180,19 @@ function handleReset() {
 
 .filters__card--active .filters__value {
   color: var(--color-brand);
+}
+
+.filters__count {
+  margin: 0;
+  padding: 0 var(--space-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.filters__count strong {
+  color: var(--color-brand);
+  font-weight: 700;
 }
 
 @keyframes filters-in {

@@ -6,25 +6,13 @@
  */
 import { computed, onMounted, ref } from 'vue'
 import RestaurantCard from '@/components/lunch/RestaurantCard.vue'
+import AppTextField from '@/components/common/AppTextField.vue'
 import { parseWalkMinutes } from '@/composables/useQuickFilters'
 import { useLunchPick } from '@/composables/useLunchPick'
 import { useWishlist } from '@/composables/useWishlist'
+import { LIST_CATEGORY_OPTIONS, matchesListCategory, SORT_OPTIONS } from '@/data/restaurantOptions'
 
-const CATEGORIES = [
-  { value: 'all', label: '전체' },
-  { value: '한식', label: '한식' },
-  { value: '일식', label: '일식' },
-  { value: '중식', label: '중식' },
-  { value: '양식', label: '양식' },
-  { value: '아시아', label: '아시아' },
-  { value: '카페', label: '카페' },
-]
-
-const SORT_OPTIONS = [
-  { value: 'distance', label: '거리순' },
-  { value: 'name', label: '이름순' },
-  { value: 'recent', label: '최신순' },
-]
+const CATEGORIES = LIST_CATEGORY_OPTIONS
 
 const { restaurants, isLoading, error, loadRestaurants } = useLunchPick()
 const { isLiked } = useWishlist()
@@ -40,16 +28,7 @@ const sortLabel = computed(
 )
 
 function matchesCategory(restaurant, selected) {
-  if (selected === 'all') return true
-
-  const menu = restaurant.menu || ''
-  const cat = restaurant.category || ''
-
-  if (selected === '카페') {
-    return menu.includes('카페') || cat.includes('카페')
-  }
-
-  return menu === selected || cat.includes(selected)
+  return matchesListCategory(restaurant, selected)
 }
 
 const filteredRestaurants = computed(() => {

@@ -2,22 +2,47 @@
 /**
  * 히스토리 화면 — 이전에 뽑았던 점심 기록
  */
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppButton from '@/components/common/AppButton.vue'
 import { usePickHistory } from '@/composables/usePickHistory'
+import { restaurantService } from '@/services/restaurantService'
 
 const router = useRouter()
 const { history, count, clearHistory, formatPickedAt } = usePickHistory()
+
+const missingIds = ref(new Set())
+const isNavigating = ref(false)
 
 function handleClear() {
   if (!count.value) return
   if (window.confirm('뽑기 기록을 모두 지울까요?')) {
     clearHistory()
+    missingIds.value = new Set()
   }
 }
 
 function goPick() {
   router.push({ name: 'home' })
+}
+
+async function handleItemClick(item) {
+  if (isNavigating.value || missingIds.value.has(item.id)) return
+
+  isNavigating.value = true
+  try {
+    const restaurant = await restaurantService.getById(item.restaurantId)
+    if (restaurant) {
+      router.push({ name: 'restaurant-detail', params: { id: item.restaurantId } })
+      return
+    }
+    missingIds.value = new Set([...missingIds.value, item.id])
+  } catch (err) {
+    console.error(err)
+    missingIds.value = new Set([...missingIds.value, item.id])
+  } finally {
+    isNavigating.value = false
+  }
 }
 </script>
 
@@ -48,17 +73,30 @@ function goPick() {
     </div>
 
     <ul v-else class="history__list">
-      <li v-for="item in history" :key="item.id" class="history__item">
-        <span class="history__emoji" aria-hidden="true">{{ item.emoji }}</span>
-        <div class="history__body">
-          <p class="history__name">{{ item.name }}</p>
-          <p class="history__meta">
-            <span v-if="item.category">{{ item.category }}</span>
-            <span v-if="item.category && item.price" aria-hidden="true">·</span>
-            <span v-if="item.price">{{ item.price }}</span>
-          </p>
-          <p class="history__time">{{ formatPickedAt(item.pickedAt) }}</p>
-        </div>
+      <li v-for="item in history" :key="item.id">
+        <button
+          type="button"
+          class="history__item"
+          :class="{ 'history__item--missing': missingIds.has(item.id) }"
+          :disabled="missingIds.has(item.id)"
+          @click="handleItemClick(item)"
+        >
+          <span class="history__emoji" aria-hidden="true">{{ item.emoji }}</span>
+          <div class="history__body">
+            <p class="history__name">{{ item.name }}</p>
+            <p v-if="missingIds.has(item.id)" class="history__missing">
+              더 이상 없는 식당이에요
+            </p>
+            <template v-else>
+              <p class="history__meta">
+                <span v-if="item.category">{{ item.category }}</span>
+                <span v-if="item.category && item.price" aria-hidden="true">·</span>
+                <span v-if="item.price">{{ item.price }}</span>
+              </p>
+              <p class="history__time">{{ formatPickedAt(item.pickedAt) }}</p>
+            </template>
+          </div>
+        </button>
       </li>
     </ul>
   </section>
@@ -147,11 +185,23 @@ function goPick() {
   display: flex;
   align-items: center;
   gap: 0.875rem;
+  width: 100%;
   padding: 0.875rem 1rem;
+  text-align: left;
   background: #ffffff;
   border: 1px solid #efe8e3;
   border-radius: 18px;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.03);
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+
+.history__item:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.history__item--missing {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .history__emoji {
@@ -172,6 +222,12 @@ function goPick() {
 .history__name {
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+.history__missing {
+  margin-top: 0.15rem;
+  font-size: var(--font-size-xs);
+  color: #ff3b30;
 }
 
 .history__meta,

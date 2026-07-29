@@ -31,7 +31,13 @@ const editCharCount = computed(() => editDraft.value.length)
 const canSubmit = computed(() => draft.value.trim().length > 0 && !isSaving.value)
 
 async function loadNotes() {
-  notes.value = await restaurantNoteService.getByRestaurantId(props.restaurantId)
+  errorMessage.value = ''
+  try {
+    notes.value = await restaurantNoteService.getByRestaurantId(props.restaurantId)
+  } catch (err) {
+    console.error(err)
+    errorMessage.value = '메모를 불러오지 못했어요.'
+  }
 }
 
 function isMine(note) {

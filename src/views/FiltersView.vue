@@ -7,14 +7,21 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
+  countFilteredRestaurants,
   FILTER_GROUPS,
   FILTER_OPTIONS,
   useQuickFilters,
 } from '@/composables/useQuickFilters'
+import { useLunchPick } from '@/composables/useLunchPick'
 
 const route = useRoute()
 const router = useRouter()
+const { restaurants, loadRestaurants } = useLunchPick()
 const { filters, isActive, setFilter, resetFilters } = useQuickFilters()
+
+const candidateCount = computed(() =>
+  countFilteredRestaurants(restaurants.value, filters.value),
+)
 
 const sectionRefs = ref({})
 
@@ -40,6 +47,7 @@ function goBack() {
 }
 
 onMounted(async () => {
+  await loadRestaurants()
   await nextTick()
   const key = focusKey.value
   if (key && sectionRefs.value[key]) {
@@ -66,6 +74,9 @@ onMounted(async () => {
     </header>
 
     <p class="filters-page__desc">원하는 조건을 고르면 홈 뽑기에 바로 적용돼요.</p>
+    <p class="filters-page__count" role="status">
+      현재 조건에 맞는 식당 <strong>{{ candidateCount }}곳</strong>
+    </p>
 
     <div class="filters-page__body">
       <section
@@ -164,6 +175,18 @@ onMounted(async () => {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   text-align: center;
+}
+
+.filters-page__count {
+  margin: calc(var(--space-sm) * -1) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.filters-page__count strong {
+  color: var(--color-brand);
+  font-weight: 700;
 }
 
 .filters-page__body {

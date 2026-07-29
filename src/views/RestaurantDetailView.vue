@@ -16,7 +16,7 @@ import { openNaverMap } from '@/utils/mapLinks'
 
 const route = useRoute()
 const router = useRouter()
-const { loadRestaurants, pickRandom, picked } = useLunchPick()
+const { loadRestaurants, pickRandom, picked, pickMessage } = useLunchPick()
 const { addHistory } = usePickHistory()
 const { filters } = useQuickFilters()
 const { isLiked, toggleLike, removeFromWishlist } = useWishlist()
@@ -77,6 +77,10 @@ async function handleRepick() {
     } else {
       router.push({ name: 'home' })
     }
+  } catch (err) {
+    console.error(err)
+    pickMessage.value = '다시 추천하지 못했어요. 잠시 후 다시 시도해 주세요.'
+    router.push({ name: 'home' })
   } finally {
     isRepicking.value = false
   }

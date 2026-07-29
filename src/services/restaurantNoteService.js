@@ -1,20 +1,16 @@
 import { MOCK_USER } from '@/data/mockUser'
+import { readJson, writeJson } from '@/utils/storage'
 
 const STORAGE_KEY = 'lunchpicker-restaurant-notes'
 export const NOTE_MAX_LENGTH = 150
 
 function readStore() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const parsed = raw ? JSON.parse(raw) : {}
-    return parsed && typeof parsed === 'object' ? parsed : {}
-  } catch {
-    return {}
-  }
+  const parsed = readJson(STORAGE_KEY, {})
+  return parsed && typeof parsed === 'object' ? parsed : {}
 }
 
 function writeStore(store) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
+  writeJson(STORAGE_KEY, store)
 }
 
 function sortNewestFirst(notes) {
@@ -116,6 +112,26 @@ export const restaurantNoteService = {
     if (!store[restaurantId]) return
     delete store[restaurantId]
     writeStore(store)
+  },
+
+  async clearByRestaurantIds(restaurantIds) {
+    const store = readStore()
+    let changed = false
+
+    for (const restaurantId of restaurantIds) {
+      if (store[restaurantId]) {
+        delete store[restaurantId]
+        changed = true
+      }
+    }
+
+    if (changed) {
+      writeStore(store)
+    }
+  },
+
+  async clearAll() {
+    writeJson(STORAGE_KEY, {})
   },
 }
 

@@ -7,12 +7,13 @@ import AppButton from '@/components/common/AppButton.vue'
 import { usePickHistory } from '@/composables/usePickHistory'
 import { useWishlist } from '@/composables/useWishlist'
 import { useLunchPick } from '@/composables/useLunchPick'
+import { restaurantNoteService } from '@/services/restaurantNoteService'
 import { restaurantService } from '@/services/restaurantService'
 
 const NOTIFY_KEY = 'lunchpicker-notify'
 
 const { count: historyCount, clearHistory } = usePickHistory()
-const { count: wishlistCount, clearWishlist } = useWishlist()
+const { count: wishlistCount, clearWishlist, removeFromWishlist } = useWishlist()
 const { loadRestaurants } = useLunchPick()
 
 const notifyEnabled = ref(false)
@@ -54,11 +55,21 @@ function handleClearHistory() {
 
 async function handleClearCustom() {
   if (!customCount.value) return
-  if (window.confirm('직접 등록한 식당을 모두 지울까요?')) {
+  if (!window.confirm('직접 등록한 식당을 모두 지울까요?')) return
+
+  try {
+    const ids = await restaurantService.getCustomIds()
+    await restaurantNoteService.clearByRestaurantIds(ids)
+    for (const id of ids) {
+      removeFromWishlist(id)
+    }
     await restaurantService.clearCustom()
     await loadRestaurants({ force: true })
     await refreshCustomCount()
     showMessage('등록한 식당을 비웠어요.')
+  } catch (err) {
+    console.error(err)
+    showMessage('삭제에 실패했어요. 다시 시도해 주세요.')
   }
 }
 

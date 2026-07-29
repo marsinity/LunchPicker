@@ -5,7 +5,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppButton from '@/components/common/AppButton.vue'
+import AppTextField from '@/components/common/AppTextField.vue'
 import { useLunchPick } from '@/composables/useLunchPick'
+import {
+  DISTANCE_OPTIONS,
+  PARTY_OPTIONS,
+  PRICE_OPTIONS,
+  REGISTRATION_CATEGORIES,
+} from '@/data/restaurantOptions'
 import { MAX_RESTAURANT_TAGS, TAG_OPTIONS } from '@/data/restaurantTags'
 import { restaurantService } from '@/services/restaurantService'
 
@@ -16,15 +23,7 @@ const { loadRestaurants } = useLunchPick()
 const isEditMode = computed(() => route.name === 'restaurant-edit')
 const editId = computed(() => (isEditMode.value ? String(route.params.id) : null))
 
-const CATEGORIES = [
-  { value: '한식', emoji: '🍚', label: '한식' },
-  { value: '일식', emoji: '🍣', label: '일식' },
-  { value: '중식', emoji: '🥟', label: '중식' },
-  { value: '양식', emoji: '🍝', label: '양식' },
-  { value: '아시아', emoji: '🍤', label: '아시아' },
-  { value: '분식', emoji: '🍢', label: '분식' },
-  { value: '카페', emoji: '☕', label: '카페' },
-]
+const CATEGORIES = REGISTRATION_CATEGORIES
 
 const DISHES = [
   { value: '김치찌개', emoji: '🍲', category: '한식' },
@@ -38,47 +37,35 @@ const DISHES = [
   { value: '두루치기', emoji: '🐷', category: '한식' },
   { value: '삼계탕', emoji: '🐔', category: '한식' },
   { value: '칼국수', emoji: '🍜', category: '한식' },
+
   { value: '라멘', emoji: '🍥', category: '일식' },
   { value: '초밥', emoji: '🍣', category: '일식' },
   { value: '회', emoji: '🍣', category: '일식' },
+
   { value: '파스타', emoji: '🍝', category: '양식' },
   { value: '리조또', emoji: '🍝', category: '양식' },
   { value: '스테이크', emoji: '🥩', category: '양식' },
   { value: '샐러드', emoji: '🥬', category: '양식' },
   { value: '햄버거', emoji: '🍔', category: '양식' },
+
+  { value: '쌀국수', emoji: '🍜', category: '아시아' },
+  { value: '똠얌꿍', emoji: '🍜', category: '아시아' },
+  { value: '팟타이', emoji: '🍜', category: '아시아' },
+
   { value: '짜장면', emoji: '🥡', category: '중식' },
   { value: '짬뽕', emoji: '🥡', category: '중식' },
   { value: '볶음밥', emoji: '🍳', category: '중식' },
   { value: '마라탕', emoji: '🌶️', category: '중식' },
   { value: '마라샹궈', emoji: '🍲', category: '중식' },
+
   { value: '떡볶이', emoji: '🌶️', category: '분식' },
   { value: '김밥', emoji: '🍙', category: '분식' },
   { value: '잔치국수', emoji: '🍜', category: '분식' },
+
   { value: '아메리카노', emoji: '☕', category: '카페' },
   { value: '라떼', emoji: '🥛', category: '카페' },
   { value: '베이커리', emoji: '🥐', category: '카페' },
   { value: '디저트', emoji: '🍰', category: '카페' },
-]
-
-const DISTANCE_OPTIONS = [
-  { value: '도보 5분', label: '5분' },
-  { value: '도보 10분', label: '10분' },
-  { value: '도보 15분', label: '15분' },
-  { value: '도보 20분', label: '20분 이상' },
-]
-
-const PRICE_OPTIONS = [
-  { value: '5천원 이하', label: '5천원 이하' },
-  { value: '1만원 이하', label: '1만원 이하' },
-  { value: '1.5만원 이하', label: '1.5만원 이하' },
-  { value: '1.5만원 이상', label: '1.5만원 이상' },
-]
-
-const PARTY_OPTIONS = [
-  { value: '1인', label: '1인' },
-  { value: '1~2인', label: '1~2인' },
-  { value: '1~4인', label: '1~4인' },
-  { value: '5인 이상', label: '5인 이상' },
 ]
 
 const SIGNATURE_MENU_MAX = 40
@@ -90,14 +77,17 @@ const form = reactive({
   signatureMenu: '',
   selectedTags: [],
   emoji: '🍚',
-  distance: '도보 10분',
-  price: '1만원 이하',
-  partySize: '1~4인',
+  distance: null,
+  price: null,
+  partySize: null,
 })
 
 const fieldErrors = reactive({
   category: '',
   name: '',
+  distance: '',
+  price: '',
+  partySize: '',
 })
 
 const isSubmitting = ref(false)
@@ -109,7 +99,16 @@ const submitLabel = computed(() => {
   if (isSubmitting.value) return isEditMode.value ? '저장 중...' : '등록 중...'
   return isEditMode.value ? '저장하기' : '등록하기'
 })
-const canSubmit = computed(() => Boolean(form.category && form.name.trim()))
+const canSubmit = computed(
+  () =>
+    Boolean(
+      form.category &&
+        form.name.trim() &&
+        form.distance &&
+        form.price &&
+        form.partySize,
+    ),
+)
 
 const quickDishes = computed(() =>
   DISHES.filter((item) => item.category === form.category),
@@ -130,6 +129,24 @@ function parseSignatureMenus(text) {
 function clearFieldErrors() {
   fieldErrors.category = ''
   fieldErrors.name = ''
+  fieldErrors.distance = ''
+  fieldErrors.price = ''
+  fieldErrors.partySize = ''
+}
+
+function selectDistance(value) {
+  form.distance = value
+  fieldErrors.distance = ''
+}
+
+function selectPrice(value) {
+  form.price = value
+  fieldErrors.price = ''
+}
+
+function selectPartySize(value) {
+  form.partySize = value
+  fieldErrors.partySize = ''
 }
 
 function fillForm(restaurant) {
@@ -139,9 +156,9 @@ function fillForm(restaurant) {
   form.signatureMenu = Array.isArray(restaurant.menus) ? restaurant.menus.join(', ') : ''
   form.selectedTags = (restaurant.tags || []).filter((tag) => TAG_OPTIONS.includes(tag)).slice(0, MAX_RESTAURANT_TAGS)
   form.emoji = restaurant.emoji || categoryEmoji(form.category)
-  form.distance = restaurant.distance || '도보 10분'
-  form.price = restaurant.price || '1만원 이하'
-  form.partySize = restaurant.partySize || '1~4인'
+  form.distance = restaurant.distance || null
+  form.price = restaurant.price || null
+  form.partySize = restaurant.partySize || null
   clearFieldErrors()
 }
 
@@ -213,6 +230,18 @@ function validateRequired() {
     fieldErrors.name = '식당 이름을 입력해주세요.'
     ok = false
   }
+  if (!form.distance) {
+    fieldErrors.distance = '도보 시간을 선택해주세요.'
+    ok = false
+  }
+  if (!form.price) {
+    fieldErrors.price = '평균 가격을 선택해주세요.'
+    ok = false
+  }
+  if (!form.partySize) {
+    fieldErrors.partySize = '적합 인원을 선택해주세요.'
+    ok = false
+  }
   return ok
 }
 
@@ -265,6 +294,9 @@ async function handleSubmit() {
     form.signatureMenu = ''
     form.selectedTags = []
     form.emoji = categoryEmoji(form.category)
+    form.distance = null
+    form.price = null
+    form.partySize = null
     clearFieldErrors()
 
     window.setTimeout(() => {
@@ -322,45 +354,31 @@ onMounted(loadForEdit)
         </p>
       </fieldset>
 
-      <div class="add__field">
-        <label class="add__label" for="name-input">
-          식당 이름 <span class="add__required" aria-hidden="true">*</span>
-        </label>
-        <input
-          id="name-input"
-          v-model="form.name"
-          class="add__input"
-          :class="{ 'add__input--error': fieldErrors.name }"
-          type="text"
-          placeholder="예) 논현 칼국수"
-          @input="fieldErrors.name = ''"
-        />
-        <p v-if="fieldErrors.name" class="add__field-error" role="alert">
-          {{ fieldErrors.name }}
-        </p>
-      </div>
+      <AppTextField
+        id="name-input"
+        v-model="form.name"
+        label="식당 이름"
+        required
+        placeholder="예) 논현 칼국수"
+        :error="fieldErrors.name"
+        @input="fieldErrors.name = ''"
+      />
+
+      <AppTextField
+        id="address-input"
+        v-model="form.address"
+        label="주소"
+        placeholder="예) 서울 강남구 테헤란로 123"
+        :maxlength="80"
+      />
 
       <div class="add__field">
-        <label class="add__label" for="address-input">주소</label>
-        <input
-          id="address-input"
-          v-model="form.address"
-          class="add__input"
-          type="text"
-          maxlength="80"
-          placeholder="예) 서울 강남구 테헤란로 123"
-        />
-      </div>
-
-      <div class="add__field">
-        <label class="add__label" for="signature-menu-input">대표 메뉴</label>
-        <input
+        <AppTextField
           id="signature-menu-input"
           v-model="form.signatureMenu"
-          class="add__input"
-          type="text"
-          :maxlength="SIGNATURE_MENU_MAX"
+          label="대표 메뉴"
           placeholder="예) 칼국수, 만두, 보쌈"
+          :maxlength="SIGNATURE_MENU_MAX"
         />
         <template v-if="quickDishes.length">
           <p class="add__sublegend">빠른 선택</p>
@@ -380,9 +398,16 @@ onMounted(loadForEdit)
         </template>
       </div>
 
-      <fieldset class="add__fieldset">
-        <legend class="add__legend">도보 시간</legend>
-        <div class="add__pills" role="group" aria-label="도보 시간">
+      <fieldset class="add__fieldset" :class="{ 'add__fieldset--error': fieldErrors.distance }">
+        <legend class="add__legend">
+          도보 시간 <span class="add__required" aria-hidden="true">*</span>
+        </legend>
+        <div
+          class="add__pills"
+          :class="{ 'add__pills--error': fieldErrors.distance }"
+          role="group"
+          aria-label="도보 시간"
+        >
           <button
             v-for="item in DISTANCE_OPTIONS"
             :key="item.value"
@@ -390,16 +415,26 @@ onMounted(loadForEdit)
             class="add__pill"
             :class="{ 'add__pill--on': form.distance === item.value }"
             :aria-pressed="form.distance === item.value"
-            @click="form.distance = item.value"
+            @click="selectDistance(item.value)"
           >
             {{ item.label }}
           </button>
         </div>
+        <p v-if="fieldErrors.distance" class="add__field-error" role="alert">
+          {{ fieldErrors.distance }}
+        </p>
       </fieldset>
 
-      <fieldset class="add__fieldset">
-        <legend class="add__legend">평균 가격 (1인)</legend>
-        <div class="add__pills" role="group" aria-label="평균 가격">
+      <fieldset class="add__fieldset" :class="{ 'add__fieldset--error': fieldErrors.price }">
+        <legend class="add__legend">
+          평균 가격 (1인) <span class="add__required" aria-hidden="true">*</span>
+        </legend>
+        <div
+          class="add__pills"
+          :class="{ 'add__pills--error': fieldErrors.price }"
+          role="group"
+          aria-label="평균 가격"
+        >
           <button
             v-for="item in PRICE_OPTIONS"
             :key="item.value"
@@ -407,16 +442,26 @@ onMounted(loadForEdit)
             class="add__pill"
             :class="{ 'add__pill--on': form.price === item.value }"
             :aria-pressed="form.price === item.value"
-            @click="form.price = item.value"
+            @click="selectPrice(item.value)"
           >
             {{ item.label }}
           </button>
         </div>
+        <p v-if="fieldErrors.price" class="add__field-error" role="alert">
+          {{ fieldErrors.price }}
+        </p>
       </fieldset>
 
-      <fieldset class="add__fieldset">
-        <legend class="add__legend">적합 인원</legend>
-        <div class="add__pills" role="group" aria-label="적합 인원">
+      <fieldset class="add__fieldset" :class="{ 'add__fieldset--error': fieldErrors.partySize }">
+        <legend class="add__legend">
+          적합 인원 <span class="add__required" aria-hidden="true">*</span>
+        </legend>
+        <div
+          class="add__pills"
+          :class="{ 'add__pills--error': fieldErrors.partySize }"
+          role="group"
+          aria-label="적합 인원"
+        >
           <button
             v-for="item in PARTY_OPTIONS"
             :key="item.value"
@@ -424,11 +469,14 @@ onMounted(loadForEdit)
             class="add__pill"
             :class="{ 'add__pill--on': form.partySize === item.value }"
             :aria-pressed="form.partySize === item.value"
-            @click="form.partySize = item.value"
+            @click="selectPartySize(item.value)"
           >
             {{ item.label }}
           </button>
         </div>
+        <p v-if="fieldErrors.partySize" class="add__field-error" role="alert">
+          {{ fieldErrors.partySize }}
+        </p>
       </fieldset>
 
       <fieldset class="add__fieldset">
@@ -554,6 +602,19 @@ onMounted(loadForEdit)
   border-color: #ff3b30;
 }
 
+.add__pills--error {
+  padding: 0.15rem;
+  border-radius: var(--radius-lg);
+  outline: 1.5px solid #ff3b30;
+}
+
+.add__field-error {
+  margin: 0.4rem 0 0;
+  font-size: 12px;
+  color: #ff3b30;
+  line-height: 1.4;
+}
+
 .add__grid--dish {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -600,37 +661,6 @@ onMounted(loadForEdit)
 .add__field {
   display: flex;
   flex-direction: column;
-}
-
-.add__input {
-  min-height: 3rem;
-  padding: 0 0.95rem;
-  font: inherit;
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
-  background: #fff;
-  border: 1.5px solid #ebe4de;
-  border-radius: 14px;
-  outline: none;
-}
-
-.add__input:focus {
-  border-color: var(--color-brand);
-}
-
-.add__input--error {
-  border-color: #ff3b30;
-}
-
-.add__input--error:focus {
-  border-color: #ff3b30;
-}
-
-.add__field-error {
-  margin: 0.4rem 0 0;
-  font-size: 12px;
-  color: #ff3b30;
-  line-height: 1.4;
 }
 
 .add__sublegend {

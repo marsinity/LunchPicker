@@ -1,19 +1,15 @@
 import { mockRestaurants } from '@/data/mockRestaurants'
+import { readJson, writeJson } from '@/utils/storage'
 
 const CUSTOM_KEY = 'lunchpicker-custom-restaurants'
 
 function readCustomRestaurants() {
-  try {
-    const raw = localStorage.getItem(CUSTOM_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readJson(CUSTOM_KEY, [])
+  return Array.isArray(parsed) ? parsed : []
 }
 
 function writeCustomRestaurants(list) {
-  localStorage.setItem(CUSTOM_KEY, JSON.stringify(list))
+  writeJson(CUSTOM_KEY, list)
 }
 
 function getMergedRestaurants() {
@@ -48,13 +44,13 @@ export const restaurantService = {
       emoji: payload.emoji || '🍽️',
       category: payload.category.trim() || '기타',
       address: payload.address?.trim() || '',
-      distance: payload.distance.trim() || '도보 10분',
-      price: payload.price.trim() || '1만원 이하',
+      distance: payload.distance.trim(),
+      price: payload.price.trim(),
       menu: payload.menu.trim() || payload.category.trim() || '기타',
       menus: Array.isArray(payload.menus)
         ? payload.menus.filter((item) => item?.trim()).map((item) => item.trim())
         : [],
-      partySize: payload.partySize.trim() || '1~4인',
+      partySize: payload.partySize.trim(),
       tags: Array.isArray(payload.tags)
         ? payload.tags.filter((item) => item?.trim()).map((item) => item.trim()).slice(0, 3)
         : [],
@@ -80,13 +76,13 @@ export const restaurantService = {
       emoji: payload.emoji || previous.emoji || '🍽️',
       category: payload.category.trim() || previous.category || '기타',
       address: payload.address != null ? payload.address.trim() : previous.address || '',
-      distance: payload.distance.trim() || previous.distance || '도보 10분',
-      price: payload.price.trim() || previous.price || '1만원 이하',
+      distance: payload.distance.trim(),
+      price: payload.price.trim(),
       menu: payload.menu.trim() || payload.category.trim() || previous.menu || '기타',
       menus: Array.isArray(payload.menus)
         ? payload.menus.filter((item) => item?.trim()).map((item) => item.trim())
         : previous.menus || [],
-      partySize: payload.partySize.trim() || previous.partySize || '1~4인',
+      partySize: payload.partySize.trim(),
       tags: Array.isArray(payload.tags)
         ? payload.tags.filter((item) => item?.trim()).map((item) => item.trim()).slice(0, 3)
         : previous.tags || [],
@@ -101,6 +97,10 @@ export const restaurantService = {
 
   async clearCustom() {
     writeCustomRestaurants([])
+  },
+
+  async getCustomIds() {
+    return readCustomRestaurants().map((restaurant) => restaurant.id)
   },
 
   /** 직접 등록한 식당만 삭제 가능 (mock 기본 데이터는 삭제 불가) */

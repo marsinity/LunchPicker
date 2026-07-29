@@ -1,15 +1,11 @@
 import { computed, ref, watch } from 'vue'
+import { readJson, writeJson } from '@/utils/storage'
 
 const STORAGE_KEY = 'lunchpicker-wishlist'
 
 function readStoredIds() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readJson(STORAGE_KEY, [])
+  return Array.isArray(parsed) ? parsed : []
 }
 
 /** 찜한 식당 id 목록 (홈·목록 화면에서 공유) */
@@ -19,7 +15,7 @@ watch(
   wishlistIds,
   (ids) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
+      writeJson(STORAGE_KEY, ids)
     } catch (err) {
       console.error(err)
     }

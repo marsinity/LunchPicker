@@ -1,16 +1,17 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import HomeBrand from '@/components/home/HomeBrand.vue'
 import QuickFilters from '@/components/home/QuickFilters.vue'
 import RecentRestaurants from '@/components/home/RecentRestaurants.vue'
 import { useLunchPick } from '@/composables/useLunchPick'
-import { useQuickFilters } from '@/composables/useQuickFilters'
+import { countFilteredRestaurants, useQuickFilters } from '@/composables/useQuickFilters'
 import { restaurantService } from '@/services/restaurantService'
 
 const router = useRouter()
 
 const {
+  restaurants,
   isLoading,
   isPicking,
   error,
@@ -24,13 +25,21 @@ const { filters } = useQuickFilters()
 
 const recentRestaurants = ref([])
 const isRecentLoading = ref(false)
+const recentError = ref('')
+
+const candidateCount = computed(() =>
+  countFilteredRestaurants(restaurants.value, filters.value),
+)
 
 async function loadRecent() {
   isRecentLoading.value = true
+  recentError.value = ''
+
   try {
     recentRestaurants.value = await restaurantService.getRecent(4)
   } catch (err) {
     console.error(err)
+    recentError.value = '최근 식당을 불러오지 못했어요.'
   } finally {
     isRecentLoading.value = false
   }
@@ -66,7 +75,11 @@ onMounted(() => {
         {{ pickMessage }}
       </p>
 
-      <QuickFilters @reset="handleResetFilters" />
+      <QuickFilters :candidate-count="candidateCount" @reset="handleResetFilters" />
+
+      <p v-if="recentError" class="home__status home__status--error" role="alert">
+        {{ recentError }}
+      </p>
 
       <RecentRestaurants
         :restaurants="recentRestaurants"

@@ -1,16 +1,12 @@
 import { computed, ref, watch } from 'vue'
+import { readJson, writeJson } from '@/utils/storage'
 
 const STORAGE_KEY = 'lunchpicker-pick-history'
 const MAX_ITEMS = 30
 
 function readHistory() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readJson(STORAGE_KEY, [])
+  return Array.isArray(parsed) ? parsed : []
 }
 
 /** 뽑기 기록 (최신순) */
@@ -20,7 +16,7 @@ watch(
   history,
   (items) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+      writeJson(STORAGE_KEY, items)
     } catch (err) {
       console.error(err)
     }
