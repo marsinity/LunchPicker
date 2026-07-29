@@ -1,9 +1,9 @@
 import { computed, ref } from 'vue'
-import { TAG_OPTIONS } from '@/data/restaurantTags'
 
 /**
  * 빠른 조건 / 조건 설정 화면에서 같이 쓰는 필터 옵션입니다.
  * value 값을 바꾸면 뽑기 필터 로직도 같이 확인해야 합니다.
+ * 태그는 필터가 아니라 등록·상세·뽑기 결과의 정보 표시용입니다.
  */
 export const FILTER_OPTIONS = {
   distance: [
@@ -30,7 +30,6 @@ export const FILTER_OPTIONS = {
     { value: '3-4', label: '3~4인' },
     { value: '5+', label: '5인+' },
   ],
-  tags: TAG_OPTIONS.map((label) => ({ value: label, label })),
 }
 
 /** 홈 카드 / 조건 설정 화면 공통 그룹 정보 */
@@ -57,7 +56,6 @@ const filters = ref({
   price: null,
   menu: null,
   party: null,
-  tags: [],
 })
 
 export function parseWalkMinutes(distance) {
@@ -124,42 +122,21 @@ function matchesParty(restaurant, filterValue) {
   return true
 }
 
-function matchesTags(restaurant, filterTags) {
-  if (!filterTags?.length) return true
-
-  const restaurantTags = restaurant.tags || []
-  return filterTags.some((tag) => restaurantTags.includes(tag))
-}
-
 export function filterRestaurants(restaurants, filterState) {
   return restaurants.filter(
     (restaurant) =>
       matchesDistance(restaurant, filterState.distance) &&
       matchesPrice(restaurant, filterState.price) &&
       matchesMenu(restaurant, filterState.menu) &&
-      matchesParty(restaurant, filterState.party) &&
-      matchesTags(restaurant, filterState.tags),
+      matchesParty(restaurant, filterState.party),
   )
 }
 
 export function hasActiveFilters(filterState) {
-  return (
-    filterState.distance != null ||
-    filterState.price != null ||
-    filterState.menu != null ||
-    filterState.party != null ||
-    (filterState.tags?.length ?? 0) > 0
-  )
+  return Object.values(filterState).some((value) => value != null)
 }
 
 export function getFilterLabel(key, value) {
-  if (key === 'tags') {
-    const tags = Array.isArray(value) ? value : []
-    if (!tags.length) return '전체'
-    if (tags.length === 1) return tags[0]
-    return `${tags.length}개 선택`
-  }
-
   if (value == null) return '전체'
   const option = FILTER_OPTIONS[key]?.find((item) => item.value === value)
   return option?.label ?? '전체'
@@ -183,21 +160,7 @@ export function useQuickFilters() {
       price: null,
       menu: null,
       party: null,
-      tags: [],
     }
-  }
-
-  function toggleFilterTag(tag) {
-    const current = filters.value.tags
-    const index = current.indexOf(tag)
-
-    if (index >= 0) {
-      filters.value.tags = current.filter((item) => item !== tag)
-      return
-    }
-
-    if (current.length >= 3) return
-    filters.value.tags = [...current, tag]
   }
 
   return {
@@ -206,7 +169,6 @@ export function useQuickFilters() {
     toggleFilter,
     setFilter,
     resetFilters,
-    toggleFilterTag,
     hasActiveFilters,
   }
 }

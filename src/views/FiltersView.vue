@@ -11,11 +11,10 @@ import {
   FILTER_OPTIONS,
   useQuickFilters,
 } from '@/composables/useQuickFilters'
-import { MAX_RESTAURANT_TAGS } from '@/data/restaurantTags'
 
 const route = useRoute()
 const router = useRouter()
-const { filters, isActive, setFilter, resetFilters, toggleFilterTag } = useQuickFilters()
+const { filters, isActive, setFilter, resetFilters } = useQuickFilters()
 
 const sectionRefs = ref({})
 
@@ -100,42 +99,6 @@ onMounted(async () => {
             :class="{ 'filters-page__chip--active': filters[group.key] === option.value }"
             :aria-pressed="filters[group.key] === option.value"
             @click="selectOption(group.key, option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-      </section>
-
-      <section
-        :ref="(el) => setSectionRef('tags', el)"
-        class="filters-page__section"
-        :class="{ 'filters-page__section--focus': focusKey === 'tags' }"
-      >
-        <h2 class="filters-page__section-title">
-          <span aria-hidden="true">🏷️</span>
-          태그
-        </h2>
-        <p class="filters-page__section-desc">최대 {{ MAX_RESTAURANT_TAGS }}개까지 선택할 수 있어요.</p>
-
-        <div class="filters-page__options" role="group" aria-label="태그">
-          <button
-            type="button"
-            class="filters-page__chip"
-            :class="{ 'filters-page__chip--active': !filters.tags.length }"
-            :aria-pressed="!filters.tags.length"
-            @click="setFilter('tags', [])"
-          >
-            전체
-          </button>
-
-          <button
-            v-for="option in FILTER_OPTIONS.tags"
-            :key="option.value"
-            type="button"
-            class="filters-page__chip"
-            :class="{ 'filters-page__chip--active': filters.tags.includes(option.value) }"
-            :aria-pressed="filters.tags.includes(option.value)"
-            @click="toggleFilterTag(option.value)"
           >
             {{ option.label }}
           </button>
@@ -232,12 +195,6 @@ onMounted(async () => {
   font-size: var(--font-size-base);
   font-weight: 700;
   letter-spacing: -0.02em;
-}
-
-.filters-page__section-desc {
-  margin: calc(var(--space-md) * -1) 0 var(--space-md);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
 }
 
 .filters-page__options {

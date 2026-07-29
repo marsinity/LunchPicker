@@ -95,6 +95,11 @@ const form = reactive({
   partySize: '1~4인',
 })
 
+const fieldErrors = reactive({
+  category: '',
+  name: '',
+})
+
 const isSubmitting = ref(false)
 const isLoadingEdit = ref(route.name === 'restaurant-edit')
 const formError = ref('')
@@ -104,6 +109,7 @@ const submitLabel = computed(() => {
   if (isSubmitting.value) return isEditMode.value ? '저장 중...' : '등록 중...'
   return isEditMode.value ? '저장하기' : '등록하기'
 })
+const canSubmit = computed(() => Boolean(form.category && form.name.trim()))
 
 const quickDishes = computed(() =>
   DISHES.filter((item) => item.category === form.category),
@@ -121,6 +127,11 @@ function parseSignatureMenus(text) {
     .slice(0, 5)
 }
 
+function clearFieldErrors() {
+  fieldErrors.category = ''
+  fieldErrors.name = ''
+}
+
 function fillForm(restaurant) {
   form.name = restaurant.name || ''
   form.address = restaurant.address || ''
@@ -131,6 +142,7 @@ function fillForm(restaurant) {
   form.distance = restaurant.distance || '도보 10분'
   form.price = restaurant.price || '1만원 이하'
   form.partySize = restaurant.partySize || '1~4인'
+  clearFieldErrors()
 }
 
 function toggleTag(tag) {
@@ -146,6 +158,7 @@ function toggleTag(tag) {
 function selectCategory(item) {
   form.category = item.value
   form.emoji = item.emoji
+  fieldErrors.category = ''
 }
 
 function applyQuickDish(item) {
@@ -168,6 +181,7 @@ async function loadForEdit() {
 
   isLoadingEdit.value = true
   formError.value = ''
+  clearFieldErrors()
 
   try {
     const restaurant = await restaurantService.getById(editId.value)
@@ -187,18 +201,26 @@ async function loadForEdit() {
   }
 }
 
+function validateRequired() {
+  clearFieldErrors()
+  let ok = true
+
+  if (!form.category) {
+    fieldErrors.category = '분류를 선택해주세요.'
+    ok = false
+  }
+  if (!form.name.trim()) {
+    fieldErrors.name = '식당 이름을 입력해주세요.'
+    ok = false
+  }
+  return ok
+}
+
 async function handleSubmit() {
   formError.value = ''
   formSuccess.value = ''
 
-  if (!form.name.trim()) {
-    formError.value = '식당 이름을 입력해 주세요.'
-    return
-  }
-  if (!form.category) {
-    formError.value = '분류를 선택해 주세요.'
-    return
-  }
+  if (!validateRequired()) return
 
   const menus = parseSignatureMenus(form.signatureMenu)
   if (form.signatureMenu.trim().length > SIGNATURE_MENU_MAX) {
@@ -243,6 +265,7 @@ async function handleSubmit() {
     form.signatureMenu = ''
     form.selectedTags = []
     form.emoji = categoryEmoji(form.category)
+    clearFieldErrors()
 
     window.setTimeout(() => {
       router.push({ name: 'restaurants' })
@@ -271,9 +294,16 @@ onMounted(loadForEdit)
     <p v-if="isLoadingEdit" class="add__message">불러오는 중...</p>
 
     <form v-else class="add__form" @submit.prevent="handleSubmit">
-      <fieldset class="add__fieldset">
-        <legend class="add__legend">분류</legend>
-        <div class="add__grid add__grid--category" role="group" aria-label="분류">
+      <fieldset class="add__fieldset" :class="{ 'add__fieldset--error': fieldErrors.category }">
+        <legend class="add__legend">
+          분류 <span class="add__required" aria-hidden="true">*</span>
+        </legend>
+        <div
+          class="add__grid add__grid--category"
+          :class="{ 'add__grid--error': fieldErrors.category }"
+          role="group"
+          aria-label="분류"
+        >
           <button
             v-for="item in CATEGORIES"
             :key="item.value"
@@ -287,21 +317,31 @@ onMounted(loadForEdit)
             <span class="add__card-label">{{ item.label }}</span>
           </button>
         </div>
+        <p v-if="fieldErrors.category" class="add__field-error" role="alert">
+          {{ fieldErrors.category }}
+        </p>
       </fieldset>
 
-      <label class="add__field">
-        <span class="add__label">식당 이름</span>
+      <div class="add__field">
+        <label class="add__label" for="name-input">
+          식당 이름 <span class="add__required" aria-hidden="true">*</span>
+        </label>
         <input
+          id="name-input"
           v-model="form.name"
           class="add__input"
+          :class="{ 'add__input--error': fieldErrors.name }"
           type="text"
           placeholder="예) 논현 칼국수"
-          required
+          @input="fieldErrors.name = ''"
         />
-      </label>
+        <p v-if="fieldErrors.name" class="add__field-error" role="alert">
+          {{ fieldErrors.name }}
+        </p>
+      </div>
 
       <div class="add__field">
-        <label class="add__label" for="address-input">주소 (선택)</label>
+        <label class="add__label" for="address-input">주소</label>
         <input
           id="address-input"
           v-model="form.address"
@@ -310,33 +350,34 @@ onMounted(loadForEdit)
           maxlength="80"
           placeholder="예) 서울 강남구 테헤란로 123"
         />
-        <p class="add__hint">상세 화면 주소 카드에 표시돼요.</p>
       </div>
 
       <div class="add__field">
-        <label class="add__label" for="signature-menu-input">대표 메뉴 (선택)</label>
+        <label class="add__label" for="signature-menu-input">대표 메뉴</label>
         <input
           id="signature-menu-input"
           v-model="form.signatureMenu"
           class="add__input"
           type="text"
           :maxlength="SIGNATURE_MENU_MAX"
-          placeholder="예) 칼국수"
+          placeholder="예) 칼국수, 만두, 보쌈"
         />
-        <p class="add__hint">여러 개는 쉼표로 구분해요. 비워두면 상세에 표시하지 않아요.</p>
-        <div v-if="quickDishes.length" class="add__pills" role="group" aria-label="빠른 선택">
-          <button
-            v-for="item in quickDishes"
-            :key="item.value"
-            type="button"
-            class="add__pill"
-            :class="{ 'add__pill--on': form.signatureMenu === item.value }"
-            :aria-pressed="form.signatureMenu === item.value"
-            @click="applyQuickDish(item)"
-          >
-            {{ item.emoji }} {{ item.value }}
-          </button>
-        </div>
+        <template v-if="quickDishes.length">
+          <p class="add__sublegend">빠른 선택</p>
+          <div class="add__pills" role="group" aria-label="빠른 선택">
+            <button
+              v-for="item in quickDishes"
+              :key="item.value"
+              type="button"
+              class="add__pill"
+              :class="{ 'add__pill--on': form.signatureMenu === item.value }"
+              :aria-pressed="form.signatureMenu === item.value"
+              @click="applyQuickDish(item)"
+            >
+              {{ item.emoji }} {{ item.value }}
+            </button>
+          </div>
+        </template>
       </div>
 
       <fieldset class="add__fieldset">
@@ -407,10 +448,21 @@ onMounted(loadForEdit)
         </div>
       </fieldset>
 
+      <p class="add__required-note">
+        <span class="add__required" aria-hidden="true">*</span>
+        표시는 필수 입력입니다.
+      </p>
+
       <p v-if="formError" class="add__message add__message--error" role="alert">{{ formError }}</p>
       <p v-else-if="formSuccess" class="add__message add__message--ok" role="status">{{ formSuccess }}</p>
 
-      <AppButton variant="primary" size="lg" block :disabled="isSubmitting" type="submit">
+      <AppButton
+        variant="primary"
+        size="lg"
+        block
+        :disabled="!canSubmit || isSubmitting"
+        type="submit"
+      >
         {{ submitLabel }}
       </AppButton>
     </form>
@@ -474,6 +526,18 @@ onMounted(loadForEdit)
   letter-spacing: -0.01em;
 }
 
+.add__required {
+  color: var(--color-brand);
+  font-weight: 700;
+}
+
+.add__required-note {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
+  line-height: 1.4;
+}
+
 .add__grid {
   display: grid;
   gap: 0.5rem;
@@ -481,6 +545,13 @@ onMounted(loadForEdit)
 
 .add__grid--category {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 0.15rem;
+  border-radius: 16px;
+  border: 1.5px solid transparent;
+}
+
+.add__grid--error {
+  border-color: #ff3b30;
 }
 
 .add__grid--dish {
@@ -547,19 +618,31 @@ onMounted(loadForEdit)
   border-color: var(--color-brand);
 }
 
-.add__hint {
+.add__input--error {
+  border-color: #ff3b30;
+}
+
+.add__input--error:focus {
+  border-color: #ff3b30;
+}
+
+.add__field-error {
   margin: 0.4rem 0 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  font-size: 12px;
+  color: #ff3b30;
   line-height: 1.4;
 }
 
-.add__hint--fieldset {
-  margin: -0.25rem 0 0.65rem;
+.add__sublegend {
+  margin: 0.75rem 0 0.5rem;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
 }
 
 .add__field .add__pills {
-  margin-top: 0.65rem;
+  margin-top: 0;
 }
 
 .add__pills {
