@@ -8,7 +8,7 @@ export const REGISTRATION_CATEGORIES = [
   { value: '중식', emoji: '🥟', label: '중식' },
   { value: '양식', emoji: '🍝', label: '양식' },
   { value: '아시아', emoji: '🍤', label: '아시아' },
-  { value: '분식', emoji: '🍢', label: '분식' },
+  { value: '분식', emoji: '🍥', label: '분식' },
   { value: '카페', emoji: '☕', label: '카페' },
 ]
 
